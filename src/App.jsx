@@ -82,13 +82,13 @@ function App() {
                     .then(() => setSoundEnabled(true))
                     .catch(() => setSoundEnabled(false));
                 }}
-                className="px-6 py-2.5 bg-[#238636] rounded-lg text-white"
+                className="px-6 py-2.5 cursor-pointer bg-[#238636] rounded-lg text-white"
               >
                 Allow Sound
               </button>
               <button
                 onClick={() => setSoundEnabled(false)}
-                className="px-6 py-2.5 bg-[#30363D] rounded-lg"
+                className="px-6 py-2.5 cursor-pointer bg-[#30363D] rounded-lg"
               >
                 No Thanks
               </button>
@@ -106,7 +106,7 @@ function App() {
 
       <FooterStatus
         online={true}
-        battery={78}
+        battery={80}
         lastUpdate="3s ago"
         mode="Live"
       />

@@ -1,6 +1,6 @@
 export default function FooterStatus({
   online = true,
-  battery = 78,
+  battery = 80,
   lastUpdate = "3s ago",
   mode = "Live",
 }) {

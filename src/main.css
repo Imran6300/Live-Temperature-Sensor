@@ -8,6 +8,7 @@
 /* Firefox */
 * {
   scrollbar-width: none;
+  /* overflow: hidden; */
 }
 
 /* IE / Edge Legacy */
