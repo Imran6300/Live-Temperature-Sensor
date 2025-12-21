@@ -9,16 +9,32 @@ import {
 } from "recharts";
 
 export default function LiveTempChart({ data = [] }) {
-  // Color logic based on latest temperature
+  // Color logic based on latest temperature (>38°C critical)
   const getColor = (temp) => {
-    if (temp < 35) return "#22C55E";
-    if (temp < 40) return "#F59E0B";
-    return "#EF4444";
+    if (temp < 37.5) return "#22C55E"; // Normal - Green
+    if (temp < 38) return "#F59E0B"; // Warning - Amber
+    return "#EF4444"; // Critical - Red
   };
 
   const latestTemp = data.length > 0 ? data[data.length - 1].temp : 0;
-
   const strokeColor = getColor(latestTemp);
+
+  // Pure JS formatter: timestamp → "HH:mm"
+  const formatXAxis = (timestamp) => {
+    const date = new Date(timestamp);
+    const hours = date.getHours().toString().padStart(2, "0");
+    const minutes = date.getMinutes().toString().padStart(2, "0");
+    return `${hours}:${minutes}`;
+  };
+
+  // Tooltip shows seconds too
+  const formatTooltipLabel = (timestamp) => {
+    const date = new Date(timestamp);
+    const hours = date.getHours().toString().padStart(2, "0");
+    const minutes = date.getMinutes().toString().padStart(2, "0");
+    const seconds = date.getSeconds().toString().padStart(2, "0");
+    return `${hours}:${minutes}:${seconds}`;
+  };
 
   return (
     <div className="bg-[#121826] border border-[#273043] rounded-2xl p-6">
@@ -31,7 +47,10 @@ export default function LiveTempChart({ data = [] }) {
       {/* Chart */}
       <div className="h-[260px]">
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={data}>
+          <LineChart
+            data={data}
+            margin={{ top: 5, right: 5, left: 5, bottom: 5 }}
+          >
             <CartesianGrid stroke="#273043" strokeDasharray="4 4" />
 
             <XAxis
@@ -39,13 +58,15 @@ export default function LiveTempChart({ data = [] }) {
               tick={{ fill: "#9AA4B2", fontSize: 12 }}
               tickLine={false}
               axisLine={false}
+              tickFormatter={formatXAxis}
+              interval="preserveStartEnd"
             />
 
             <YAxis
               tick={{ fill: "#9AA4B2", fontSize: 12 }}
               tickLine={false}
               axisLine={false}
-              domain={["dataMin - 1", "dataMax + 1"]}
+              domain={["dataMin - 0.5", "dataMax + 0.5"]}
             />
 
             <Tooltip
@@ -56,6 +77,8 @@ export default function LiveTempChart({ data = [] }) {
                 color: "#E6EDF3",
               }}
               labelStyle={{ color: "#9AA4B2" }}
+              labelFormatter={formatTooltipLabel}
+              formatter={(value) => [`${value}°C`, "Temperature"]}
             />
 
             <Line
@@ -63,8 +86,10 @@ export default function LiveTempChart({ data = [] }) {
               dataKey="temp"
               stroke={strokeColor}
               strokeWidth={3}
-              dot={false}
-              isAnimationActive={false}
+              dot={{ fill: strokeColor, r: 4 }}
+              activeDot={{ r: 6 }}
+              isAnimationActive={true}
+              animationDuration={800}
             />
           </LineChart>
         </ResponsiveContainer>

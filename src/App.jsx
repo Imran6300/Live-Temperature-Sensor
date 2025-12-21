@@ -19,15 +19,11 @@ function App() {
   const [alertAcknowledged, setAlertAcknowledged] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(false);
 
-  const [data, setData] = useState([
-    { time: "10:01", temp: 34.8 },
-    { time: "10:02", temp: 35.1 },
-    { time: "10:03", temp: 36.0 },
-    { time: "10:04", temp: 36.8 },
-  ]);
+  const [data, setData] = useState([]);
 
   useTemperatureAlert(alertActive);
 
+  // 🔔 Alert logic
   useEffect(() => {
     if (currentTemp > ALERT_THRESHOLD && !alertAcknowledged && soundEnabled) {
       setAlertActive(true);
@@ -38,22 +34,28 @@ function App() {
     }
   }, [currentTemp, alertAcknowledged, soundEnabled]);
 
+  // 🌡️ LIVE TEMPERATURE UPDATE (FIXED)
   useEffect(() => {
     const interval = setInterval(() => {
-      setCurrentTemp((prev) => {
-        const next = +(prev + 0.4).toFixed(1);
-        return next > 41 ? 32.5 : next;
-      });
+      setCurrentTemp((prevTemp) => {
+        const nextTemp = +(prevTemp + 0.4).toFixed(1);
+        const finalTemp = nextTemp > 41 ? 32.5 : nextTemp;
 
-      setData((prev) => {
-        const nextTemp = +(currentTemp + 0.4).toFixed(1);
-        const nextTime = `10:${String(prev.length + 1).padStart(2, "0")}`;
-        return [...prev.slice(-5), { time: nextTime, temp: nextTemp }];
+        // ✅ Chart update uses SAME temperature
+        setData((prevData) => [
+          ...prevData.slice(-10),
+          {
+            time: Date.now(),
+            temp: finalTemp,
+          },
+        ]);
+
+        return finalTemp;
       });
     }, 3000);
 
     return () => clearInterval(interval);
-  }, [currentTemp]);
+  }, []);
 
   const handleStopAlarm = () => {
     setAlertActive(false);
@@ -64,7 +66,7 @@ function App() {
     <div className="bg-[#0B0F14] min-h-screen text-[#E6EDF3] p-3 space-y-4">
       <HeaderBar deviceName="TempGuard-01" status="online" battery={80} />
 
-      {/* Sound permission prompt with cursor-pointer */}
+      {/* Sound permission modal */}
       {!soundEnabled && (
         <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
           <div className="bg-[#161B22] p-6 rounded-lg max-w-sm mx-4 text-center space-y-5 border border-[#30363D]">
@@ -72,34 +74,21 @@ function App() {
             <p className="text-sm text-[#8B949E] leading-relaxed">
               This app can play an audible alarm when the temperature exceeds{" "}
               {ALERT_THRESHOLD}°C.
-              <br />
-              Do you want to allow sound alerts?
             </p>
             <div className="flex gap-4 justify-center">
               <button
                 onClick={() => {
                   enableAlarmSound()
                     .then(() => setSoundEnabled(true))
-                    .catch((err) => {
-                      console.error("Sound enable failed:", err);
-                      alert(
-                        "Unable to enable sound. Alerts will be visual only."
-                      );
-                      setSoundEnabled(false);
-                    });
+                    .catch(() => setSoundEnabled(false));
                 }}
-                className="px-6 py-2.5 bg-[#238636] hover:bg-[#2EA043] rounded-lg text-white font-medium transition cursor-pointer"
+                className="px-6 py-2.5 bg-[#238636] rounded-lg text-white"
               >
                 Allow Sound
               </button>
               <button
-                onClick={() => {
-                  setSoundEnabled(false);
-                  alert(
-                    "Sound alerts disabled. You'll still see visual alerts."
-                  );
-                }}
-                className="px-6 py-2.5 bg-[#30363D] hover:bg-[#3F444C] rounded-lg font-medium transition cursor-pointer"
+                onClick={() => setSoundEnabled(false)}
+                className="px-6 py-2.5 bg-[#30363D] rounded-lg"
               >
                 No Thanks
               </button>
