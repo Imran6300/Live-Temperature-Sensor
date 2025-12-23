@@ -11,28 +11,28 @@ import {
 export default function LiveTempChart({ data = [] }) {
   // Color logic based on latest temperature (>38°C critical)
   const getColor = (temp) => {
-    if (temp < 37.5) return "#22C55E"; // Normal - Green
-    if (temp < 38) return "#F59E0B"; // Warning - Amber
-    return "#EF4444"; // Critical - Red
+    if (temp < 37.5) return "#22C55E"; // Normal
+    if (temp < 38) return "#F59E0B"; // Warning
+    return "#EF4444"; // Critical
   };
 
   const latestTemp = data.length > 0 ? data[data.length - 1].temp : 0;
   const strokeColor = getColor(latestTemp);
 
-  // Pure JS formatter: timestamp → "HH:mm"
+  // ⏰ X-Axis: 12-hour time (H:M)
   const formatXAxis = (timestamp) => {
     const date = new Date(timestamp);
-    const hours = date.getHours().toString().padStart(2, "0");
-    const minutes = date.getMinutes().toString().padStart(2, "0");
+    const hours = date.getHours() % 12 || 12; // ✅ 12-hour conversion
+    const minutes = date.getMinutes();
     return `${hours}:${minutes}`;
   };
 
-  // Tooltip shows seconds too
+  // ⏰ Tooltip: 12-hour time (H:M:S)
   const formatTooltipLabel = (timestamp) => {
     const date = new Date(timestamp);
-    const hours = date.getHours().toString().padStart(2, "0");
-    const minutes = date.getMinutes().toString().padStart(2, "0");
-    const seconds = date.getSeconds().toString().padStart(2, "0");
+    const hours = date.getHours() % 12 || 12; // ✅ 12-hour conversion
+    const minutes = date.getMinutes();
+    const seconds = date.getSeconds();
     return `${hours}:${minutes}:${seconds}`;
   };
 
