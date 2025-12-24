@@ -9,7 +9,6 @@ import {
 } from "recharts";
 
 export default function LiveTempChart({ data = [] }) {
-  // Color logic based on latest temperature (>38°C critical)
   const getColor = (temp) => {
     if (temp < 37.5) return "#22C55E"; // Normal
     if (temp < 38) return "#F59E0B"; // Warning
@@ -19,18 +18,16 @@ export default function LiveTempChart({ data = [] }) {
   const latestTemp = data.length > 0 ? data[data.length - 1].temp : 0;
   const strokeColor = getColor(latestTemp);
 
-  // ⏰ X-Axis: 12-hour time (H:M)
   const formatXAxis = (timestamp) => {
     const date = new Date(timestamp);
-    const hours = date.getHours() % 12 || 12; // ✅ 12-hour conversion
+    const hours = date.getHours() % 12 || 12; //  12-hour conversion
     const minutes = date.getMinutes();
     return `${hours}:${minutes}`;
   };
 
-  // ⏰ Tooltip: 12-hour time (H:M:S)
   const formatTooltipLabel = (timestamp) => {
     const date = new Date(timestamp);
-    const hours = date.getHours() % 12 || 12; // ✅ 12-hour conversion
+    const hours = date.getHours() % 12 || 12; // 12-hour conversion
     const minutes = date.getMinutes();
     const seconds = date.getSeconds();
     return `${hours}:${minutes}:${seconds}`;
@@ -38,13 +35,11 @@ export default function LiveTempChart({ data = [] }) {
 
   return (
     <div className="bg-[#121826] border border-[#273043] rounded-2xl p-6">
-      {/* Header */}
       <div className="mb-4">
         <p className="text-sm text-[#9AA4B2]">Live Temperature</p>
         <p className="text-xs text-[#9AA4B2] mt-1">Real-time sensor readings</p>
       </div>
 
-      {/* Chart */}
       <div className="h-[260px]">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart

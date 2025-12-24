@@ -1,8 +1,7 @@
 import { ResponsiveContainer, LineChart, Line, Area, YAxis } from "recharts";
 
 export default function PredictCard({ predictedTemp = 41.2, minutes = 15 }) {
-  /* ---------- Prediction model (simple statistical) ---------- */
-  const uncertainty = 1.2; // ± range (can be dynamic later)
+  const uncertainty = 1.2;
 
   const data = [
     {
@@ -19,7 +18,6 @@ export default function PredictCard({ predictedTemp = 41.2, minutes = 15 }) {
     },
   ];
 
-  /* ---------- Risk color logic ---------- */
   const getRisk = (temp) => {
     if (temp < 35) return { color: "#22C55E", label: "SAFE" };
     if (temp < 40) return { color: "#F59E0B", label: "WARNING" };
@@ -30,7 +28,6 @@ export default function PredictCard({ predictedTemp = 41.2, minutes = 15 }) {
 
   return (
     <div className="bg-[#121826] border border-[#273043] rounded-2xl p-6 flex flex-col justify-between">
-      {/* Header */}
       <div>
         <p className="text-sm text-[#9AA4B2]">Temperature Prediction</p>
         <p className="text-xs text-[#9AA4B2] mt-1">
@@ -38,13 +35,11 @@ export default function PredictCard({ predictedTemp = 41.2, minutes = 15 }) {
         </p>
       </div>
 
-      {/* Statistical Prediction Graph */}
       <div className="h-[140px] mt-3">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={data}>
             <YAxis hide domain={["dataMin - 2", "dataMax + 2"]} />
 
-            {/* Uncertainty band */}
             <Area
               type="monotone"
               dataKey="upper"
@@ -59,7 +54,6 @@ export default function PredictCard({ predictedTemp = 41.2, minutes = 15 }) {
               fill="#121826"
             />
 
-            {/* Mean prediction */}
             <Line
               type="monotone"
               dataKey="mean"
@@ -71,7 +65,6 @@ export default function PredictCard({ predictedTemp = 41.2, minutes = 15 }) {
         </ResponsiveContainer>
       </div>
 
-      {/* Result */}
       <div className="flex items-end justify-between mt-4">
         <div>
           <span

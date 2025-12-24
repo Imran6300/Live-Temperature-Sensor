@@ -3,7 +3,7 @@ let enabled = false;
 
 export function enableAlarmSound() {
   if (!audio) {
-    audio = new Audio("/beep.mp3"); // ✅ MUST MATCH FILE NAME
+    audio = new Audio("/beep.mp3");
     audio.loop = true;
   }
 

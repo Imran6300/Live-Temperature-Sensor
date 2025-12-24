@@ -14,14 +14,12 @@ export default function HeaderBar({
           sm:grid-cols-3 sm:items-center sm:gap-y-0
         "
       >
-        {/* LEFT: Device Name */}
         <div className="text-left sm:order-1">
           <span className="text-base sm:text-lg font-semibold text-[#E6EDF3] truncate">
             {deviceName}
           </span>
         </div>
 
-        {/* CENTER: Download Button */}
         <div className="flex justify-center sm:order-2">
           <button
             onClick={onDownload}
@@ -38,10 +36,7 @@ export default function HeaderBar({
           </button>
         </div>
 
-        {/* RIGHT: Status + Battery */}
         <div className="flex justify-center sm:justify-end items-center gap-4 text-sm sm:order-3">
-          {/* Status */}
-          {/* Status */}
           <div className="flex items-center gap-2">
             <span
               className={`h-2 w-2 rounded-full ${
@@ -53,7 +48,6 @@ export default function HeaderBar({
             </span>
           </div>
 
-          {/* Battery */}
           <div className="flex items-center gap-1">
             <span
               className={`text-lg ${

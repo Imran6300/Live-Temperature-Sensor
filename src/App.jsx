@@ -17,35 +17,34 @@ const BACKEND_URL = "https://temp-backend-production-4599.up.railway.app";
 const socket = io(BACKEND_URL);
 
 function App() {
-  // 🌡️ Core dashboard states
+  // dashboard states
   const [currentTemp, setCurrentTemp] = useState(0);
   const [prediction, setPrediction] = useState(0);
   const [battery, setBattery] = useState(0);
   const [online, setOnline] = useState(false);
   const [trend, setTrend] = useState("stable");
 
-  // ⏱️ Last update tracking (FIXED)
   const [lastUpdateTs, setLastUpdateTs] = useState(null);
   const [secondsAgo, setSecondsAgo] = useState(0);
 
-  // 📊 Chart data
+  //  Chart data
   const [data, setData] = useState([]);
 
-  // 🔔 Alert states
+  // Alert states
   const [alertActive, setAlertActive] = useState(false);
   const [alertAcknowledged, setAlertAcknowledged] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(false);
 
   useTemperatureAlert(alertActive);
 
-  // 🧠 Trend calculation
+  // Trend calculation
   const calculateTrend = (prev, current) => {
     if (current - prev > 0.2) return "rising";
     if (prev - current > 0.2) return "falling";
     return "stable";
   };
 
-  // 🔹 INITIAL DASHBOARD LOAD (REST)
+  //  INITIAL DASHBOARD LOAD (REST)
   useEffect(() => {
     fetch(`${BACKEND_URL}/api/dashboard`)
       .then((res) => res.json())
@@ -56,7 +55,7 @@ function App() {
         setOnline(d.online);
         setTrend("stable");
 
-        // ✅ reset timestamp
+        //  reset timestamp
         setLastUpdateTs(Date.now());
 
         setData([
@@ -69,7 +68,7 @@ function App() {
       .catch((err) => console.error("Dashboard fetch error:", err));
   }, []);
 
-  // 🔹 LIVE SOCKET UPDATES
+  // LIVE SOCKET UPDATES
   useEffect(() => {
     socket.on("temperature-update", (d) => {
       setCurrentTemp((prevTemp) => {
@@ -82,7 +81,7 @@ function App() {
       setBattery(d.battery);
       setOnline(d.online);
 
-      // ✅ reset timestamp on every update
+      //  reset timestamp on every update
       setLastUpdateTs(Date.now());
 
       setData((prev) => [
@@ -97,7 +96,7 @@ function App() {
     return () => socket.off("temperature-update");
   }, []);
 
-  // ⏱️ LAST UPDATE TIMER (MAIN FIX)
+  //  LAST UPDATE TIMER (MAIN FIX)
   useEffect(() => {
     if (!lastUpdateTs) return;
 
@@ -109,7 +108,7 @@ function App() {
     return () => clearInterval(interval);
   }, [lastUpdateTs]);
 
-  // 🔔 ALERT LOGIC
+  //  ALERT LOGIC
   useEffect(() => {
     if (currentTemp > ALERT_THRESHOLD && !alertAcknowledged && soundEnabled) {
       setAlertActive(true);
@@ -134,7 +133,6 @@ function App() {
         battery={battery}
       />
 
-      {/* 🔊 Sound permission modal */}
       {!soundEnabled && (
         <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
           <div className="bg-[#161B22] p-6 rounded-lg max-w-sm mx-4 text-center space-y-5 border border-[#30363D]">

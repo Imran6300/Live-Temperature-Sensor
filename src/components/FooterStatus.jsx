@@ -10,7 +10,6 @@ export default function FooterStatus({
 
   return (
     <div className="bg-[#0B0F14] border border-[#273043] rounded-xl px-6 py-3 flex flex-wrap items-center justify-between gap-4 text-sm">
-      {/* Device Status */}
       <div className="flex items-center gap-2">
         <span
           className="w-2.5 h-2.5 rounded-full"
@@ -21,19 +20,16 @@ export default function FooterStatus({
         </span>
       </div>
 
-      {/* Battery */}
       <div className="flex items-center gap-2">
         <span className="text-[#9AA4B2]">Battery</span>
         <span style={{ color: batteryColor }}>{battery}%</span>
       </div>
 
-      {/* Last Update */}
       <div className="flex items-center gap-2">
         <span className="text-[#9AA4B2]">Last update</span>
         <span className="text-[#E6EDF3]">{lastUpdate}</span>
       </div>
 
-      {/* Mode */}
       <div className="flex items-center gap-2">
         <span className="text-[#9AA4B2]">Mode</span>
         <span className="text-[#E6EDF3] font-medium">{mode}</span>
