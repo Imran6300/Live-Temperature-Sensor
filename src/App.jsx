@@ -17,7 +17,6 @@ const BACKEND_URL = "https://temp-backend-production-4599.up.railway.app";
 const socket = io(BACKEND_URL);
 
 function App() {
-  // dashboard states
   const [currentTemp, setCurrentTemp] = useState(0);
   const [prediction, setPrediction] = useState(0);
   const [battery, setBattery] = useState(0);
@@ -26,25 +25,21 @@ function App() {
 
   const [lastUpdateTs, setLastUpdateTs] = useState(null);
   const [secondsAgo, setSecondsAgo] = useState(0);
-
-  //  Chart data
   const [data, setData] = useState([]);
 
-  // Alert states
   const [alertActive, setAlertActive] = useState(false);
   const [alertAcknowledged, setAlertAcknowledged] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(false);
 
   useTemperatureAlert(alertActive);
 
-  // Trend calculation
   const calculateTrend = (prev, current) => {
     if (current - prev > 0.2) return "rising";
     if (prev - current > 0.2) return "falling";
     return "stable";
   };
 
-  //  INITIAL DASHBOARD LOAD (REST)
+  // Initial load
   useEffect(() => {
     fetch(`${BACKEND_URL}/api/dashboard`)
       .then((res) => res.json())
@@ -52,68 +47,53 @@ function App() {
         setCurrentTemp(d.temperature);
         setPrediction(d.tempprediction);
         setBattery(d.battery);
-        setOnline(d.online);
-        setTrend("stable");
-
-        //  reset timestamp
+        // Modified: Set online status based on first data temperature (non-zero = online)
+        setOnline(d.temperature !== 0);
         setLastUpdateTs(Date.now());
 
-        setData([
-          {
-            time: Date.now(),
-            temp: d.temperature,
-          },
-        ]);
+        setData([{ time: Date.now(), temp: d.temperature }]);
       })
-      .catch((err) => console.error("Dashboard fetch error:", err));
+      .catch(console.error);
   }, []);
 
-  // LIVE SOCKET UPDATES
+  // Live socket updates
   useEffect(() => {
     socket.on("temperature-update", (d) => {
-      setCurrentTemp((prevTemp) => {
-        const newTrend = calculateTrend(prevTemp, d.temperature);
-        setTrend(newTrend);
+      setCurrentTemp((prev) => {
+        setTrend(calculateTrend(prev, d.temperature));
         return d.temperature;
       });
 
       setPrediction(d.tempprediction);
       setBattery(d.battery);
       setOnline(d.online);
-
-      //  reset timestamp on every update
       setLastUpdateTs(Date.now());
 
       setData((prev) => [
         ...prev.slice(-10),
-        {
-          time: Date.now(),
-          temp: d.temperature,
-        },
+        { time: Date.now(), temp: d.temperature },
       ]);
     });
 
     return () => socket.off("temperature-update");
   }, []);
 
-  //  LAST UPDATE TIMER (MAIN FIX)
+  // Last update timer
   useEffect(() => {
     if (!lastUpdateTs) return;
 
-    const interval = setInterval(() => {
-      const diff = Math.floor((Date.now() - lastUpdateTs) / 1000);
-      setSecondsAgo(diff);
+    const i = setInterval(() => {
+      setSecondsAgo(Math.floor((Date.now() - lastUpdateTs) / 1000));
     }, 1000);
 
-    return () => clearInterval(interval);
+    return () => clearInterval(i);
   }, [lastUpdateTs]);
 
-  //  ALERT LOGIC
+  // Alert logic
   useEffect(() => {
     if (currentTemp > ALERT_THRESHOLD && !alertAcknowledged && soundEnabled) {
       setAlertActive(true);
     }
-
     if (currentTemp <= ALERT_THRESHOLD) {
       setAlertActive(false);
       setAlertAcknowledged(false);
@@ -125,29 +105,46 @@ function App() {
     setAlertAcknowledged(true);
   };
 
+  // 🔥 DOWNLOAD HANDLER (WORKING)
+  const handleDownloadReport = async () => {
+    const res = await fetch(`${BACKEND_URL}/api/dashboard/download-report`);
+
+    const blob = await res.blob();
+    const url = window.URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `temperature-report-${Date.now()}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+
+    window.URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="bg-[#0B0F14] min-h-screen text-[#E6EDF3] p-3 space-y-4">
       <HeaderBar
         deviceName="TempGuard-01"
         status={online ? "online" : "offline"}
         battery={battery}
+        onDownload={handleDownloadReport} // ✅ FIXED
       />
 
       {!soundEnabled && (
-        <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
-          <div className="bg-[#161B22] p-6 rounded-lg max-w-sm mx-4 text-center space-y-5 border border-[#30363D]">
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+          <div className="bg-[#161B22] p-6 rounded-lg max-w-sm text-center space-y-5 border border-[#30363D]">
             <h3 className="text-xl font-semibold">Enable Alert Sound?</h3>
             <p className="text-sm text-[#8B949E]">
-              This app can play an alarm when temperature exceeds{" "}
-              {ALERT_THRESHOLD}°C.
+              Alarm plays when temperature exceeds {ALERT_THRESHOLD}°C
             </p>
             <div className="flex gap-4 justify-center">
               <button
-                onClick={() => {
+                onClick={() =>
                   enableAlarmSound()
                     .then(() => setSoundEnabled(true))
-                    .catch(() => setSoundEnabled(false));
-                }}
+                    .catch(() => setSoundEnabled(false))
+                }
                 className="px-6 py-2.5 bg-[#238636] rounded-lg text-white"
               >
                 Allow Sound
