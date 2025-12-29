@@ -1,6 +1,6 @@
 import { ResponsiveContainer, LineChart, Line, Area, YAxis } from "recharts";
 
-export default function PredictCard({ predictedTemp = 41.2, minutes = 15 }) {
+export default function PredictCard({ predictedTemp = 41.2, minutes = 10 }) {
   const uncertainty = 1.2;
 
   const data = [

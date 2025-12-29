@@ -162,7 +162,7 @@ function App() {
 
       <MetricRow>
         <CurrTempCard temperature={currentTemp} trend={trend} />
-        <PredictCard predictedTemp={prediction} minutes={15} />
+        <PredictCard predictedTemp={prediction} minutes={10} />
       </MetricRow>
 
       <LiveTempChart data={data} />
