@@ -14,11 +14,16 @@ import { enableAlarmSound } from "./utils/AlaramAudio";
 
 const ALERT_THRESHOLD = 38;
 const BACKEND_URL = "https://temp-backend-production-a0ec.up.railway.app";
-const socket = io(BACKEND_URL);
+
+/* 🔥 SOCKET.IO — RAILWAY SAFE */
+const socket = io(BACKEND_URL, {
+  transports: ["websocket"],
+  secure: true,
+});
 
 function App() {
   const [currentTemp, setCurrentTemp] = useState(0);
-  const [prediction, setPrediction] = useState(0);
+  const [prediction, setPrediction] = useState(0); // still from REST
   const [battery, setBattery] = useState(0);
   const [online, setOnline] = useState(false);
   const [trend, setTrend] = useState("stable");
@@ -39,34 +44,38 @@ function App() {
     return "stable";
   };
 
-  // Initial load
+  /* 🟢 INITIAL LOAD (REST API) */
   useEffect(() => {
     fetch(`${BACKEND_URL}/api/dashboard`)
       .then((res) => res.json())
       .then((d) => {
-        setCurrentTemp(d.temperature);
-        setPrediction(d.tempprediction);
-        setBattery(d.battery);
-        // Modified: Set online status based on first data temperature (non-zero = online)
+        setCurrentTemp(d.temperature || 0);
+        setPrediction(d.tempprediction || 0);
+        setBattery(d.battery || 0);
         setOnline(d.temperature !== 0);
         setLastUpdateTs(Date.now());
 
-        setData([{ time: Date.now(), temp: d.temperature }]);
+        setData([{ time: Date.now(), temp: d.temperature || 0 }]);
       })
       .catch(console.error);
   }, []);
 
-  // Live socket updates
+  /* 🔥 LIVE SOCKET UPDATES (MQTT → SOCKET.IO) */
   useEffect(() => {
-    socket.on("temperature-update", (d) => {
+    socket.on("connect", () => {
+      console.log("🟢 Socket connected:", socket.id);
+    });
+
+    socket.on("sensor:update", (d) => {
+      console.log("🔥 LIVE MQTT DATA:", d);
+
       setCurrentTemp((prev) => {
         setTrend(calculateTrend(prev, d.temperature));
         return d.temperature;
       });
 
-      setPrediction(d.tempprediction);
-      setBattery(d.battery);
-      setOnline(d.online);
+      setBattery(d.battery ?? battery);
+      setOnline(true);
       setLastUpdateTs(Date.now());
 
       setData((prev) => [
@@ -75,10 +84,19 @@ function App() {
       ]);
     });
 
-    return () => socket.off("temperature-update");
-  }, []);
+    socket.on("disconnect", () => {
+      console.log("🔴 Socket disconnected");
+      setOnline(false);
+    });
 
-  // Last update timer
+    return () => {
+      socket.off("sensor:update");
+      socket.off("connect");
+      socket.off("disconnect");
+    };
+  }, [battery]);
+
+  /* ⏱ LAST UPDATE TIMER */
   useEffect(() => {
     if (!lastUpdateTs) return;
 
@@ -89,7 +107,7 @@ function App() {
     return () => clearInterval(i);
   }, [lastUpdateTs]);
 
-  // Alert logic
+  /* 🚨 ALERT LOGIC */
   useEffect(() => {
     if (currentTemp > ALERT_THRESHOLD && !alertAcknowledged && soundEnabled) {
       setAlertActive(true);
@@ -105,10 +123,9 @@ function App() {
     setAlertAcknowledged(true);
   };
 
-  // 🔥 DOWNLOAD HANDLER (WORKING)
+  /* 📥 DOWNLOAD REPORT */
   const handleDownloadReport = async () => {
     const res = await fetch(`${BACKEND_URL}/api/dashboard/download-report`);
-
     const blob = await res.blob();
     const url = window.URL.createObjectURL(blob);
 
@@ -118,7 +135,6 @@ function App() {
     document.body.appendChild(a);
     a.click();
     a.remove();
-
     window.URL.revokeObjectURL(url);
   };
 
@@ -128,7 +144,7 @@ function App() {
         deviceName="TempGuard-01"
         status={online ? "online" : "offline"}
         battery={battery}
-        onDownload={handleDownloadReport} // ✅ FIXED
+        onDownload={handleDownloadReport}
       />
 
       {!soundEnabled && (
