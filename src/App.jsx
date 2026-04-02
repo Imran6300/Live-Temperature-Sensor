@@ -13,7 +13,7 @@ import useTemperatureAlert from "./hooks/alert";
 import { enableAlarmSound } from "./utils/AlaramAudio";
 
 const ALERT_THRESHOLD = 38;
-const BACKEND_URL = "https://temp-backend-production-a0ec.up.railway.app";
+const BACKEND_URL = "https://temp-backend-ad2n7pa6yr5f.imran6300.deno.net";
 
 /* 🔥 SOCKET.IO — RAILWAY SAFE */
 const socket = io(BACKEND_URL, {
