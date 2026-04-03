@@ -9,6 +9,8 @@ import LiveTempChart from "./components/LiveTempChart";
 import FooterStatus from "./components/FooterStatus";
 import AlertModal from "./components/AlertModel";
 
+import { Analytics } from "@vercel/analytics/react";
+
 import useTemperatureAlert from "./hooks/alert";
 import { enableAlarmSound } from "./utils/AlaramAudio";
 
@@ -198,6 +200,7 @@ function App() {
         temperature={currentTemp}
         onStop={handleStopAlarm}
       />
+      <Analytics />
     </div>
   );
 }
