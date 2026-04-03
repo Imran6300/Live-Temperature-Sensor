@@ -13,8 +13,7 @@ import useTemperatureAlert from "./hooks/alert";
 import { enableAlarmSound } from "./utils/AlaramAudio";
 
 const ALERT_THRESHOLD = 38;
-const BACKEND_URL =
-  "https://wendy-billion-bedrooms-instruments.trycloudflare.com";
+const BACKEND_URL = "https://bibulous-carylon-supersolemnly.ngrok-free.dev";
 
 function App() {
   const [currentTemp, setCurrentTemp] = useState(0);
