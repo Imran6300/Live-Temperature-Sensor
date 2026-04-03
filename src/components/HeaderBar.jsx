@@ -10,7 +10,7 @@ export default function HeaderBar({
   const [downloading, setDownloading] = useState(false);
 
   const handleDownloadClick = () => {
-    if (!onDownload || !isOnline || downloading) return;
+    if (!onDownload || downloading) return;
 
     setDownloading(true);
 
@@ -73,8 +73,8 @@ export default function HeaderBar({
                 battery > 50
                   ? "text-[#22C55E]"
                   : battery > 20
-                  ? "text-[#FACC15]"
-                  : "text-[#EF4444]"
+                    ? "text-[#FACC15]"
+                    : "text-[#EF4444]"
               }`}
             >
               🔋
