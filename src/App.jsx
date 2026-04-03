@@ -14,7 +14,7 @@ import { enableAlarmSound } from "./utils/AlaramAudio";
 
 const ALERT_THRESHOLD = 38;
 const BACKEND_URL =
-  "https://contacting-insert-fold-framework.trycloudflare.com";
+  "https://wendy-billion-bedrooms-instruments.trycloudflare.com";
 
 function App() {
   const [currentTemp, setCurrentTemp] = useState(0);
@@ -80,7 +80,7 @@ function App() {
 
   useEffect(() => {
     socketRef.current = io(BACKEND_URL, {
-      transports: ["websocket"],
+      transports: ["websocket", "polling"],
       reconnection: true,
       reconnectionAttempts: Infinity,
       reconnectionDelay: 2000,
