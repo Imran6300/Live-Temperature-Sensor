@@ -14,7 +14,7 @@ import { enableAlarmSound } from "./utils/AlaramAudio";
 
 const ALERT_THRESHOLD = 38;
 const BACKEND_URL =
-  "https://setup-judgment-scheduled-educational.trycloudflare.com";
+  "https://contacting-insert-fold-framework.trycloudflare.com";
 
 function App() {
   const [currentTemp, setCurrentTemp] = useState(0);
