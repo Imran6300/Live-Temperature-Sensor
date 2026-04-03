@@ -14,7 +14,7 @@ import { enableAlarmSound } from "./utils/AlaramAudio";
 
 const ALERT_THRESHOLD = 38;
 const BACKEND_URL =
-  "https://cnet-clicking-promotions-authentic.trycloudflare.com";
+  "https://setup-judgment-scheduled-educational.trycloudflare.com";
 
 function App() {
   const [currentTemp, setCurrentTemp] = useState(0);
