@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { io } from "socket.io-client";
 
 import HeaderBar from "./components/HeaderBar";
@@ -16,18 +16,13 @@ const ALERT_THRESHOLD = 38;
 const BACKEND_URL =
   "https://cnet-clicking-promotions-authentic.trycloudflare.com";
 
-/* 🔥 SOCKET.IO — RAILWAY SAFE */
-const socket = io(BACKEND_URL, {
-  transports: ["websocket"],
-  secure: true,
-});
-
 function App() {
   const [currentTemp, setCurrentTemp] = useState(0);
   const [prediction, setPrediction] = useState(0); // still from REST
   const [battery, setBattery] = useState(0);
   const [online, setOnline] = useState(false);
   const [trend, setTrend] = useState("stable");
+  const socketRef = useRef(null);
 
   const [lastUpdateTs, setLastUpdateTs] = useState(null);
   const [secondsAgo, setSecondsAgo] = useState(0);
@@ -61,42 +56,6 @@ function App() {
       .catch(console.error);
   }, []);
 
-  /* 🔥 LIVE SOCKET UPDATES (MQTT → SOCKET.IO) */
-  useEffect(() => {
-    socket.on("connect", () => {
-      console.log("🟢 Socket connected:", socket.id);
-    });
-
-    socket.on("sensor:update", (d) => {
-      console.log("🔥 LIVE MQTT DATA:", d);
-
-      setCurrentTemp((prev) => {
-        setTrend(calculateTrend(prev, d.temperature));
-        return d.temperature;
-      });
-
-      setBattery(d.battery ?? battery);
-      setOnline(true);
-      setLastUpdateTs(Date.now());
-
-      setData((prev) => [
-        ...prev.slice(-10),
-        { time: Date.now(), temp: d.temperature },
-      ]);
-    });
-
-    socket.on("disconnect", () => {
-      console.log("🔴 Socket disconnected");
-      setOnline(false);
-    });
-
-    return () => {
-      socket.off("sensor:update");
-      socket.off("connect");
-      socket.off("disconnect");
-    };
-  }, [battery]);
-
   /* ⏱ LAST UPDATE TIMER */
   useEffect(() => {
     if (!lastUpdateTs) return;
@@ -118,6 +77,50 @@ function App() {
       setAlertAcknowledged(false);
     }
   }, [currentTemp, alertAcknowledged, soundEnabled]);
+
+  useEffect(() => {
+    socketRef.current = io(BACKEND_URL, {
+      transports: ["websocket"],
+      reconnection: true,
+      reconnectionAttempts: Infinity,
+      reconnectionDelay: 2000,
+    });
+
+    socketRef.current.on("connect", () => {
+      console.log("🟢 Socket connected:", socketRef.current.id);
+    });
+
+    socketRef.current.on("sensor:update", (d) => {
+      console.log("🔥 LIVE MQTT DATA:", d);
+
+      setCurrentTemp((prev) => {
+        setTrend(calculateTrend(prev, d.temperature));
+        return d.temperature;
+      });
+
+      setBattery(d.battery ?? 0);
+      setOnline(true);
+      setLastUpdateTs(Date.now());
+
+      setData((prev) => [
+        ...prev.slice(-10),
+        { time: Date.now(), temp: d.temperature },
+      ]);
+    });
+
+    socketRef.current.on("connect_error", (err) => {
+      console.log("❌ Socket error:", err.message);
+    });
+
+    socketRef.current.on("disconnect", () => {
+      console.log("🔴 Socket disconnected");
+      setOnline(false);
+    });
+
+    return () => {
+      socketRef.current.disconnect();
+    };
+  }, []);
 
   const handleStopAlarm = () => {
     setAlertActive(false);
