@@ -15,7 +15,7 @@ import useTemperatureAlert from "./hooks/alert";
 import { enableAlarmSound } from "./utils/AlaramAudio";
 
 const ALERT_THRESHOLD = 38;
-const BACKEND_URL = "http://129.159.233.250";
+const BACKEND_URL = "https://myiotapp.dpdns.org";
 
 function App() {
   const [currentTemp, setCurrentTemp] = useState(0);
