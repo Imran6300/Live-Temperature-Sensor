@@ -13,6 +13,7 @@ import { Analytics } from "@vercel/analytics/react";
 
 import useTemperatureAlert from "./hooks/alert";
 import { enableAlarmSound } from "./utils/AlaramAudio";
+import { getTempStatus } from "./utils/tempStatus";
 
 const ALERT_THRESHOLD = 38;
 const BACKEND_URL = "https://myiotapp.dpdns.org";
@@ -32,6 +33,7 @@ function App() {
   const [alertActive, setAlertActive] = useState(false);
   const [alertAcknowledged, setAlertAcknowledged] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(false);
+  const [showSoundPrompt, setShowSoundPrompt] = useState(true);
 
   useTemperatureAlert(alertActive);
 
@@ -143,57 +145,95 @@ function App() {
     window.URL.revokeObjectURL(url);
   };
 
-  return (
-    <div className="bg-[#0B0F14] min-h-screen text-[#E6EDF3] p-3 space-y-4">
-      <HeaderBar
-        deviceName="TempGuard-01"
-        status={online ? "online" : "offline"}
-        battery={battery}
-        onDownload={handleDownloadReport}
-      />
+  const status = getTempStatus(currentTemp);
+  const accent = online ? status.color : "#64748B";
+  const isCritical = online && currentTemp > ALERT_THRESHOLD;
 
-      {!soundEnabled && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
-          <div className="bg-[#161B22] p-6 rounded-lg max-w-sm text-center space-y-5 border border-[#30363D]">
-            <h3 className="text-xl font-semibold">Enable Alert Sound?</h3>
-            <p className="text-sm text-[#8B949E]">
-              Alarm plays when temperature exceeds {ALERT_THRESHOLD}°C
-            </p>
-            <div className="flex gap-4 justify-center">
+  return (
+    <div className="app-shell text-[#E6EDF3]" style={{ "--accent": accent }}>
+      <div className="ambient" aria-hidden="true" />
+      {isCritical && <div className="alarm-vignette" aria-hidden="true" />}
+
+      <div className="relative z-10 mx-auto max-w-6xl space-y-4 p-3 sm:p-5">
+        <div className="reveal" style={{ "--i": 0 }}>
+          <HeaderBar
+            deviceName="TempGuard-01"
+            status={online ? "online" : "offline"}
+            battery={battery}
+            onDownload={handleDownloadReport}
+          />
+        </div>
+
+        <MetricRow>
+          <div className="reveal h-full" style={{ "--i": 1 }}>
+            <CurrTempCard
+              temperature={currentTemp}
+              trend={trend}
+              updatedAt={lastUpdateTs}
+            />
+          </div>
+          <div className="reveal h-full" style={{ "--i": 2 }}>
+            <PredictCard
+              predictedTemp={prediction}
+              minutes={10}
+              currentTemp={currentTemp}
+            />
+          </div>
+        </MetricRow>
+
+        <div className="reveal" style={{ "--i": 3 }}>
+          <LiveTempChart data={data} />
+        </div>
+
+        <div className="reveal" style={{ "--i": 4 }}>
+          <FooterStatus
+            online={online}
+            battery={battery}
+            lastUpdate={`${secondsAgo}s ago`}
+            mode="Live"
+          />
+        </div>
+      </div>
+
+      {showSoundPrompt && !soundEnabled && (
+        <div className="modal-backdrop fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-md">
+          <div className="modal-card w-full max-w-sm space-y-5 rounded-3xl border border-white/10 bg-[#10131C]/95 p-7 text-center">
+            <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-[#34D399]/10">
+              <svg viewBox="0 0 24 24" className="h-7 w-7" fill="none" stroke="#34D399" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.94 1.94 0 0 0 3.4 0" />
+              </svg>
+            </div>
+            <div>
+              <h3 className="font-display text-xl font-bold">Enable alert sound?</h3>
+              <p className="mt-1.5 text-sm text-[#9AA4B2]">
+                Alarm plays when temperature exceeds {ALERT_THRESHOLD}°C
+              </p>
+            </div>
+            <div className="flex justify-center gap-3">
               <button
                 onClick={() =>
                   enableAlarmSound()
                     .then(() => setSoundEnabled(true))
                     .catch(() => setSoundEnabled(false))
+                    .finally(() => setShowSoundPrompt(false))
                 }
-                className="px-6 py-2.5 bg-[#238636] rounded-lg text-white"
+                className="shimmer cursor-pointer rounded-xl bg-gradient-to-r from-[#059669] to-[#34D399] px-6 py-2.5 font-semibold text-[#04130D] transition-all duration-300 hover:-translate-y-0.5 active:scale-95"
               >
-                Allow Sound
+                Allow sound
               </button>
               <button
-                onClick={() => setSoundEnabled(false)}
-                className="px-6 py-2.5 bg-[#30363D] rounded-lg"
+                onClick={() => {
+                  setSoundEnabled(false);
+                  setShowSoundPrompt(false);
+                }}
+                className="cursor-pointer rounded-xl bg-white/[0.07] px-6 py-2.5 font-medium text-[#E6EDF3] transition-all duration-300 hover:bg-white/[0.12] active:scale-95"
               >
-                No Thanks
+                No thanks
               </button>
             </div>
           </div>
         </div>
       )}
-
-      <MetricRow>
-        <CurrTempCard temperature={currentTemp} trend={trend} />
-        <PredictCard predictedTemp={prediction} minutes={10} />
-      </MetricRow>
-
-      <LiveTempChart data={data} />
-
-      <FooterStatus
-        online={online}
-        battery={battery}
-        lastUpdate={`${secondsAgo}s ago`}
-        mode="Live"
-      />
 
       <AlertModal
         open={alertActive}
