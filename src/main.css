@@ -402,3 +402,21 @@ body {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ───────────── Full-screen, no-scroll dashboard (desktop / tablet landscape) ───────────── */
+@media (min-width: 1024px) {
+  .app-shell {
+    height: 100dvh;
+    min-height: 0;
+    overflow: hidden;
+  }
+}
+
+/* Very short windows: fall back to normal scrolling instead of crushing the cards */
+@media (min-width: 1024px) and (max-height: 600px) {
+  .app-shell {
+    height: auto;
+    min-height: 100dvh;
+    overflow: auto;
+  }
+}

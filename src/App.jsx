@@ -4,7 +4,6 @@ import { io } from "socket.io-client";
 import HeaderBar from "./components/HeaderBar";
 import CurrTempCard from "./components/MetricRow/CurrTempCard";
 import PredictCard from "./components/MetricRow/PredictCard";
-import MetricRow from "./components/MetricRow/MetricRow";
 import LiveTempChart from "./components/LiveTempChart";
 import FooterStatus from "./components/FooterStatus";
 import AlertModal from "./components/AlertModel";
@@ -106,7 +105,7 @@ function App() {
       setLastUpdateTs(Date.now());
 
       setData((prev) => [
-        ...prev.slice(-10),
+        ...prev.slice(-39),
         { time: Date.now(), temp: d.temperature },
       ]);
     });
@@ -154,8 +153,8 @@ function App() {
       <div className="ambient" aria-hidden="true" />
       {isCritical && <div className="alarm-vignette" aria-hidden="true" />}
 
-      <div className="relative z-10 mx-auto max-w-6xl space-y-4 p-3 sm:p-5">
-        <div className="reveal" style={{ "--i": 0 }}>
+      <div className="relative z-10 mx-auto flex h-full w-full flex-col gap-3 p-3 lg:p-4">
+        <div className="reveal shrink-0" style={{ "--i": 0 }}>
           <HeaderBar
             deviceName="TempGuard-01"
             status={online ? "online" : "offline"}
@@ -164,28 +163,29 @@ function App() {
           />
         </div>
 
-        <MetricRow>
-          <div className="reveal h-full" style={{ "--i": 1 }}>
+        <main className="grid min-h-0 flex-1 grid-cols-1 gap-3 lg:grid-cols-12 lg:grid-rows-[minmax(0,5fr)_minmax(0,7fr)]">
+          <div className="reveal min-h-0 lg:col-span-5 lg:row-span-2" style={{ "--i": 1 }}>
             <CurrTempCard
               temperature={currentTemp}
               trend={trend}
               updatedAt={lastUpdateTs}
             />
           </div>
-          <div className="reveal h-full" style={{ "--i": 2 }}>
+
+          <div className="reveal min-h-0 lg:col-span-7" style={{ "--i": 2 }}>
             <PredictCard
               predictedTemp={prediction}
               minutes={10}
               currentTemp={currentTemp}
             />
           </div>
-        </MetricRow>
 
-        <div className="reveal" style={{ "--i": 3 }}>
-          <LiveTempChart data={data} />
-        </div>
+          <div className="reveal min-h-0 lg:col-span-7" style={{ "--i": 3 }}>
+            <LiveTempChart data={data} />
+          </div>
+        </main>
 
-        <div className="reveal" style={{ "--i": 4 }}>
+        <div className="reveal shrink-0" style={{ "--i": 4 }}>
           <FooterStatus
             online={online}
             battery={battery}

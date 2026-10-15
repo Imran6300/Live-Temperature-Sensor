@@ -50,103 +50,114 @@ export default function PredictCard({
   }, [predictedTemp, currentTemp, hasCurrent, minutes]);
 
   return (
-    <div className="glass lift h-full rounded-3xl p-5 sm:p-6 flex flex-col">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <p className="text-sm font-medium text-[#9AA4B2]">
-            Temperature prediction
-          </p>
-          <p className="text-xs text-[#9AA4B2]/80 mt-1">
-            Next {minutes} minutes, statistical forecast
-          </p>
+    <div className="glass lift flex h-full min-h-0 flex-col gap-4 rounded-3xl p-5 sm:p-6 lg:flex-row lg:gap-6">
+      {/* Left: headline numbers */}
+      <div className="flex shrink-0 flex-col justify-between gap-4 lg:w-[40%] xl:w-[36%]">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="whitespace-nowrap text-base font-medium text-[#9AA4B2]">
+              Temperature prediction
+            </p>
+            <p className="mt-1 text-xs text-[#9AA4B2]/80">
+              Next {minutes} minutes, statistical forecast
+            </p>
+          </div>
+
+          <div
+            className="flex items-center gap-2 rounded-full px-3.5 py-1.5 text-sm font-semibold"
+            style={{
+              color,
+              background: `color-mix(in srgb, ${color} 14%, transparent)`,
+            }}
+          >
+            <span
+              className={`h-1.5 w-1.5 rounded-full ${
+                label === "Critical" ? "blink" : ""
+              }`}
+              style={{ background: color }}
+            />
+            {label}
+          </div>
         </div>
 
-        <div
-          className="flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold"
-          style={{
-            color,
-            background: `color-mix(in srgb, ${color} 14%, transparent)`,
-          }}
-        >
-          <span
-            className={`h-1.5 w-1.5 rounded-full ${
-              label === "Critical" ? "blink" : ""
-            }`}
-            style={{ background: color }}
-          />
-          {label}
-        </div>
-      </div>
-
-      <div className="h-[170px] sm:h-[190px] mt-4 -mx-1">
-        <ResponsiveContainer width="100%" height="100%">
-          <ComposedChart data={data} margin={{ top: 10, right: 12, left: 12, bottom: 0 }}>
-            <defs>
-              <linearGradient id="predBand" x1="0" y1="0" x2="1" y2="0">
-                <stop offset="0%" stopColor={color} stopOpacity={0.08} />
-                <stop offset="100%" stopColor={color} stopOpacity={0.38} />
-              </linearGradient>
-            </defs>
-
-            <XAxis
-              dataKey="t"
-              tickLine={false}
-              axisLine={false}
-              tick={{ fill: "#9AA4B2", fontSize: 11 }}
-              tickFormatter={(v) => (v === 0 ? "now" : `+${v}m`)}
-              interval="preserveStartEnd"
-            />
-            <YAxis hide domain={domain} />
-
-            <Area
-              type="monotone"
-              dataKey="range"
-              stroke="none"
-              fill="url(#predBand)"
-              activeDot={false}
-              isAnimationActive
-              animationDuration={1100}
-            />
-            <Line
-              type="monotone"
-              dataKey="mean"
-              stroke={color}
-              strokeWidth={3}
-              strokeDasharray="7 6"
-              strokeLinecap="round"
-              style={{ filter: `drop-shadow(0 0 6px ${color})` }}
-              dot={false}
-              activeDot={{ r: 5 }}
-              isAnimationActive
-              animationDuration={1100}
-            />
-          </ComposedChart>
-        </ResponsiveContainer>
-      </div>
-
-      <div className="flex items-end justify-between mt-3">
         <div>
           <span
-            className="num text-[3.1rem] font-extrabold leading-none"
+            className="num text-5xl font-extrabold leading-none xl:text-6xl 2xl:text-7xl"
             style={{ color, transition: "color 0.8s" }}
           >
             {shown.toFixed(1)}°
           </span>
-          <p className="text-xs text-[#9AA4B2] mt-1">expected temperature</p>
+          <p className="mt-2 flex flex-wrap items-baseline gap-x-2 text-sm text-[#9AA4B2]">
+            <span>expected temperature</span>
+            {delta !== null && (
+              <span className="whitespace-nowrap">
+                <span
+                  className="num text-base font-bold"
+                  style={{
+                    color:
+                      delta > 0.05 ? "#FB923C" : delta < -0.05 ? "#38BDF8" : "#9AA4B2",
+                  }}
+                >
+                  {delta > 0 ? "+" : ""}
+                  {delta.toFixed(1)}°
+                </span>{" "}
+                vs now
+              </span>
+            )}
+          </p>
         </div>
+      </div>
 
-        {delta !== null && (
-          <div className="text-right">
-            <p
-              className="num text-lg font-bold"
-              style={{ color: delta > 0.05 ? "#FB923C" : delta < -0.05 ? "#38BDF8" : "#9AA4B2" }}
+      {/* Right: forecast cone */}
+      <div className="relative h-[170px] min-w-0 flex-1 lg:h-auto lg:min-h-0">
+        <div className="absolute inset-0">
+          <ResponsiveContainer width="100%" height="100%">
+            <ComposedChart
+              data={data}
+              margin={{ top: 10, right: 16, left: 24, bottom: 0 }}
             >
-              {delta > 0 ? "+" : ""}
-              {delta.toFixed(1)}°
-            </p>
-            <p className="text-xs text-[#9AA4B2]">vs right now</p>
-          </div>
-        )}
+              <defs>
+                <linearGradient id="predBand" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0%" stopColor={color} stopOpacity={0.08} />
+                  <stop offset="100%" stopColor={color} stopOpacity={0.38} />
+                </linearGradient>
+              </defs>
+
+              <XAxis
+                dataKey="t"
+                tickLine={false}
+                axisLine={false}
+                tick={{ fill: "#9AA4B2", fontSize: 12 }}
+                tickFormatter={(v) => (v === 0 ? "now" : `+${v}m`)}
+                interval="preserveStartEnd"
+              />
+              <YAxis hide domain={domain} />
+
+              <Area
+                type="monotone"
+                dataKey="range"
+                stroke="none"
+                fill="url(#predBand)"
+                activeDot={false}
+                isAnimationActive
+                animationDuration={1100}
+              />
+              <Line
+                type="monotone"
+                dataKey="mean"
+                stroke={color}
+                strokeWidth={3}
+                strokeDasharray="7 6"
+                strokeLinecap="round"
+                style={{ filter: `drop-shadow(0 0 6px ${color})` }}
+                dot={false}
+                activeDot={{ r: 5 }}
+                isAnimationActive
+                animationDuration={1100}
+              />
+            </ComposedChart>
+          </ResponsiveContainer>
+        </div>
       </div>
     </div>
   );

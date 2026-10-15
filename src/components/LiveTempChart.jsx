@@ -45,17 +45,7 @@ export default function LiveTempChart({ data = [] }) {
     if (cx == null || cy == null) return null;
 
     if (index !== data.length - 1) {
-      return (
-        <circle
-          key={`dot-${index}`}
-          cx={cx}
-          cy={cy}
-          r={3}
-          fill="#0B0F14"
-          stroke={strokeColor}
-          strokeWidth={2}
-        />
-      );
+      return <g key={`dot-${index}`} />;
     }
 
     return (
@@ -73,24 +63,24 @@ export default function LiveTempChart({ data = [] }) {
   ];
 
   return (
-    <div className="glass lift rounded-3xl p-5 sm:p-6">
-      <div className="mb-4 flex flex-wrap items-start justify-between gap-4">
+    <div className="glass lift flex h-full min-h-0 flex-col rounded-3xl p-5 sm:p-6">
+      <div className="mb-3 flex shrink-0 flex-wrap items-start justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <p className="text-sm font-medium text-[#9AA4B2]">Live temperature</p>
+            <p className="text-base font-medium text-[#9AA4B2]">Live temperature</p>
             <span className="flex items-center gap-1.5 rounded-full bg-[#34D399]/10 px-2 py-0.5 text-[10px] font-semibold text-[#34D399]">
               <span className="blink h-1.5 w-1.5 rounded-full bg-[#34D399]" />
               Streaming
             </span>
           </div>
-          <p className="text-xs text-[#9AA4B2]/80 mt-1">Real-time sensor readings</p>
+          <p className="mt-1 text-xs text-[#9AA4B2]/80">Real-time sensor readings, last {data.length} {data.length === 1 ? "reading" : "readings"}</p>
         </div>
 
         <div className="flex gap-5">
           {stats.map((s) => (
             <div key={s.label} className="text-right">
               <p className="text-[11px] text-[#9AA4B2]">{s.label}</p>
-              <p className="num text-base font-bold text-[#E6EDF3]">
+              <p className="num text-lg font-bold text-[#E6EDF3]">
                 {hasData ? `${s.value.toFixed(1)}°` : "--"}
               </p>
             </div>
@@ -98,7 +88,8 @@ export default function LiveTempChart({ data = [] }) {
         </div>
       </div>
 
-      <div className="h-[260px] sm:h-[300px] -mx-1">
+      <div className="relative -mx-1 min-h-[240px] flex-1 lg:min-h-0">
+        <div className="absolute inset-0">
         <ResponsiveContainer width="100%" height="100%">
           <ComposedChart
             data={data}
@@ -169,6 +160,8 @@ export default function LiveTempChart({ data = [] }) {
               dataKey="temp"
               stroke="none"
               fill="url(#liveFill)"
+              tooltipType="none"
+              activeDot={false}
               isAnimationActive
               animationDuration={700}
             />
@@ -186,6 +179,7 @@ export default function LiveTempChart({ data = [] }) {
             />
           </ComposedChart>
         </ResponsiveContainer>
+        </div>
       </div>
     </div>
   );

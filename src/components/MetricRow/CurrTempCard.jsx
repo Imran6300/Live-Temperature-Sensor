@@ -36,12 +36,12 @@ export default function CurrTempCard({
   const limitDeg = (LIMIT / MAX_TEMP) * 360;
 
   return (
-    <div className="glass glass-accent lift h-full rounded-3xl p-5 sm:p-6 flex flex-col">
+    <div className="glass glass-accent lift flex h-full min-h-0 flex-col rounded-3xl p-5 sm:p-6">
       <div className="flex items-center justify-between gap-3">
-        <p className="text-sm font-medium text-[#9AA4B2]">Current temperature</p>
+        <p className="text-base font-medium text-[#9AA4B2]">Current temperature</p>
 
         <div
-          className="flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold"
+          className="flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-sm font-semibold"
           style={{
             color,
             background: `color-mix(in srgb, ${color} 14%, transparent)`,
@@ -50,7 +50,7 @@ export default function CurrTempCard({
         >
           <svg
             viewBox="0 0 24 24"
-            className={`h-3.5 w-3.5 ${trendCls}`}
+            className={`h-4 w-4 ${trendCls}`}
             fill="none"
             stroke="currentColor"
             strokeWidth="2.6"
@@ -63,7 +63,11 @@ export default function CurrTempCard({
         </div>
       </div>
 
-      <div className="relative mx-auto my-3 aspect-square w-full max-w-[300px]">
+      <div className="relative my-2 min-h-[300px] flex-1 lg:min-h-0 [container-type:size]">
+        <div
+          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
+          style={{ width: "min(100cqw, 100cqh)", height: "min(100cqw, 100cqh)" }}
+        >
         <svg viewBox="0 0 260 260" className="absolute inset-0 h-full w-full">
           {/* tick ring */}
           {Array.from({ length: TICKS }).map((_, i) => {
@@ -150,15 +154,16 @@ export default function CurrTempCard({
 
         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
           <span
-            className="num text-[3.9rem] sm:text-[4.3rem] leading-none font-extrabold tracking-tight"
-            style={{ color, transition: "color 0.8s" }}
+            className="num leading-none font-extrabold tracking-tight"
+            style={{ color, transition: "color 0.8s", fontSize: "clamp(3.4rem, 25cqmin, 12rem)" }}
           >
             {shown.toFixed(1)}
           </span>
-          <span className="text-xs text-[#9AA4B2] mt-1">°C</span>
+          <span className="mt-1 text-[#9AA4B2]" style={{ fontSize: "clamp(0.9rem, 4.5cqmin, 1.6rem)" }}>°C</span>
           <span
-            className="mt-2 rounded-full px-3 py-0.5 text-xs font-semibold"
+            className="mt-2 rounded-full px-4 py-1 font-semibold"
             style={{
+              fontSize: "clamp(0.8rem, 4cqmin, 1.4rem)",
               color,
               background: `color-mix(in srgb, ${color} 14%, transparent)`,
               transition: "color 0.8s, background 0.8s",
@@ -167,19 +172,20 @@ export default function CurrTempCard({
             {statusLabel}
           </span>
         </div>
+        </div>
       </div>
 
-      <div className="mt-auto flex items-center justify-between text-xs text-[#9AA4B2]">
-        <span className="num font-semibold">{MIN_TEMP}°</span>
+      <div className="flex items-center justify-between text-sm text-[#9AA4B2]">
+        <span className="num text-base font-semibold">{MIN_TEMP}°</span>
         <span className="flex items-center gap-1.5">
           <span className="h-0.5 w-4 rounded bg-[#F43F5E]" />
           Alert limit {LIMIT}°
         </span>
-        <span className="num font-semibold">{MAX_TEMP}°</span>
+        <span className="num text-base font-semibold">{MAX_TEMP}°</span>
       </div>
 
       {temperature > LIMIT && (
-        <div className="modal-card mt-4 flex items-center justify-center gap-2 rounded-xl border border-[#F43F5E]/40 bg-[#F43F5E]/10 px-3 py-2 text-sm font-semibold text-[#FB7185]">
+        <div className="modal-card mt-3 flex items-center justify-center gap-2 rounded-xl border border-[#F43F5E]/40 bg-[#F43F5E]/10 px-3 py-2 text-sm font-semibold text-[#FB7185]">
           <span className="blink h-2 w-2 rounded-full bg-[#F43F5E]" />
           Temperature alert active
         </div>
